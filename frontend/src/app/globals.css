@@ -1,0 +1,271 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --bg-main: #060913;
+  --bg-card: rgba(15, 22, 42, 0.45);
+  --bg-card-hover: rgba(23, 33, 61, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-glow: rgba(0, 242, 254, 0.3);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --accent-cyan: #00f2fe;
+  --accent-purple: #9d4edd;
+  --accent-green: #10b981;
+  --accent-orange: #f97316;
+  --accent-red: #ef4444;
+  
+  --shadow-glow: 0 0 20px rgba(0, 242, 254, 0.15);
+  --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  --glass-backdrop: blur(12px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(157, 78, 221, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 242, 254, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-color-glow);
+  box-shadow: var(--shadow-glow), var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+/* Page Layout Components */
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Sidebar navigation toggle options */
+.sidebar-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  min-height: calc(100vh - 4rem);
+}
+
+@media (max-width: 1024px) {
+  .sidebar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Neon Glow Texts */
+.glow-text-cyan {
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+  color: var(--accent-cyan);
+}
+
+.glow-text-purple {
+  text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+  color: var(--accent-purple);
+}
+
+/* Table styling for dark premium look */
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.custom-table th {
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: left;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.custom-table tbody tr {
+  background: rgba(15, 22, 42, 0.25);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.custom-table tbody tr:hover {
+  background: var(--bg-card-hover);
+  transform: scale(1.005);
+}
+
+.custom-table td {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.custom-table td:first-child {
+  border-left: 1px solid var(--border-color);
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.custom-table td:last-child {
+  border-right: 1px solid var(--border-color);
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+  }
+}
+
+.pulse-border-cyan {
+  animation: pulseGlow 4s infinite ease-in-out;
+  border-color: var(--accent-cyan) !important;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--accent-orange);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-info {
+  background: rgba(0, 242, 254, 0.1);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+/* Interactive elements */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  color: #060913;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  opacity: 0.95;
+}
+
+/* Custom interactive calendar matrix */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.calendar-cell {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px 8px;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.calendar-cell:hover {
+  background: rgba(0, 242, 254, 0.05);
+  border-color: var(--accent-cyan);
+  transform: scale(1.05);
+}
+
+.calendar-cell.has-debt {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.calendar-cell.has-debt:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--accent-red);
+}
