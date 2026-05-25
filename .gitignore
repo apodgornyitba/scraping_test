@@ -1,0 +1,8 @@
+*.pdf
+*.json
+.venv/
+__pycache__/
+*.png
+*.log
+arca.db*
+backend/data/
