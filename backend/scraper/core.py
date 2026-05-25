@@ -11,6 +11,46 @@ from backend.scraper.parser import clean_currency, parse_taxpayer_metadata
 
 logger = logging.getLogger(__name__)
 
+def robust_click(page, selectors, description="elemento", timeout=5000):
+    """Intenta hacer clic en un elemento utilizando múltiples selectores de fallback."""
+    for selector in selectors:
+        try:
+            loc = page.locator(selector).first
+            if loc.is_visible(timeout=1000):
+                logger.info(f"Haciendo clic en {description} con selector: '{selector}'")
+                loc.click(timeout=timeout)
+                return True
+        except Exception:
+            continue
+    # Si ninguno fue visible inmediatamente, probamos con el primero con un timeout mayor
+    try:
+        logger.warning(f"Ningún selector visible inmediatamente para {description}. Reintentando con el primero: '{selectors[0]}'...")
+        page.locator(selectors[0]).first.click(timeout=timeout)
+        return True
+    except Exception as e:
+        logger.error(f"Fallo al hacer clic en {description}: {str(e)}")
+        raise e
+
+def robust_fill(page, selectors, value, description="campo", timeout=5000):
+    """Intenta escribir en un campo de texto utilizando múltiples selectores de fallback."""
+    for selector in selectors:
+        try:
+            loc = page.locator(selector).first
+            if loc.is_visible(timeout=1000):
+                logger.info(f"Escribiendo en {description} con selector: '{selector}'")
+                loc.fill(value, timeout=timeout)
+                return True
+        except Exception:
+            continue
+    # Fallback al primero
+    try:
+        logger.warning(f"Ningún selector visible inmediatamente para {description}. Reintentando con el primero: '{selectors[0]}'...")
+        page.locator(selectors[0]).first.fill(value, timeout=timeout)
+        return True
+    except Exception as e:
+        logger.error(f"Fallo al escribir en {description}: {str(e)}")
+        raise e
+
 def run_scraper(user, headless=True):
     """Ejecuta el scraper para un usuario específico, guardando datos históricos en base de datos."""
     username = user['username']
@@ -43,14 +83,14 @@ def run_scraper(user, headless=True):
             page.goto("https://scraping.gaixl.xyz", wait_until="networkidle")
             page.screenshot(path=f"{screenshot_prefix}_0_landing.png")
             
-            # 2. Iniciar sesión
+            # 2. Iniciar sesión robusta
             logger.info("Completando formulario de inicio de sesión...")
-            page.fill("input#username", username)
-            page.fill("input#password", password)
+            robust_fill(page, ["input#username", "input[name='username']", "[placeholder*='Usuario']"], username, "Nombre de usuario")
+            robust_fill(page, ["input#password", "input[name='password']", "[placeholder*='Clave']"], password, "Contraseña")
             page.screenshot(path=f"{screenshot_prefix}_1_filled.png")
             
             logger.info("Haciendo clic en el botón de Ingresar...")
-            page.click("button[type='submit']")
+            robust_click(page, ["button[type='submit']", "input[type='submit']", "button:has-text('Ingresar')", ".btn-primary"], "Botón de ingreso")
             
             # Esperar a que la página cambie o cargue el dashboard
             logger.info("Esperando redirección al panel de control...")
@@ -131,14 +171,31 @@ def run_scraper(user, headless=True):
             
             # --- ESPACIO PARA LÓGICA ESPECÍFICA DE EXTRACCIÓN ---
             logger.info("Navegando a la sección CCMA...")
-            page.locator("a.btn", has_text="CCMA").first.click()
+            robust_click(page, [
+                "a.btn:has-text('CCMA')",
+                "a:has-text('CCMA')",
+                "a[href*='ccma']",
+                "a[data-nav-link][href*='ccma']"
+            ], "Enlace CCMA")
             page.wait_for_load_state("networkidle")
             time.sleep(2)
             handle_interruptions(page)
             page.screenshot(path=f"{screenshot_prefix}_3_ccma.png")
             
             # Inspeccionar el selector de fecha para ver rango disponible
-            date_input = page.locator("#global-date")
+            date_input = None
+            date_selectors = ["#global-date", "input[type='month']", "input[name='selectedDate']"]
+            for sel in date_selectors:
+                try:
+                    loc = page.locator(sel).first
+                    if loc.is_visible(timeout=1000):
+                        date_input = loc
+                        break
+                except:
+                    continue
+            if not date_input:
+                date_input = page.locator("#global-date") # Fallback final
+                
             min_date = "2023-01"  # Valor por defecto inicial
             max_date = "2025-06"  # Valor por defecto final
             
@@ -177,14 +234,14 @@ def run_scraper(user, headless=True):
                     
                     try:
                         # Rellenar el selector de fecha y aplicar
-                        date_input.fill(month)
-                        page.locator("input[value='Aplicar']").click()
+                        robust_fill(page, ["#global-date", "input[type='month']", "input[name='selectedDate']"], month, "Selector de fecha")
+                        robust_click(page, ["input[value='Aplicar']", "button:has-text('Aplicar')", "input[type='submit']"], "Botón Aplicar")
                     except Exception as click_err:
                         logger.warning(f"Error al aplicar fecha {month}, reintentando tras chequear avisos: {str(click_err)}")
                         # Si falló (ej. tapado por aviso emergente), cerramos avisos y reintentamos
                         handle_interruptions(page)
-                        date_input.fill(month)
-                        page.locator("input[value='Aplicar']").click()
+                        robust_fill(page, ["#global-date", "input[type='month']", "input[name='selectedDate']"], month, "Selector de fecha")
+                        robust_click(page, ["input[value='Aplicar']", "button:has-text('Aplicar')", "input[type='submit']"], "Botón Aplicar")
                         
                     page.wait_for_load_state("networkidle")
                     time.sleep(1)
@@ -192,71 +249,111 @@ def run_scraper(user, headless=True):
                     # Cerrar avisos operativos si aparecen después del clic
                     handle_interruptions(page)
                     
-                    # Extraer cabeceras de la tabla
-                    headers = page.locator("table th").all_inner_texts()
-                    headers_clean = [h.strip() for h in headers]
-                    
-                    rows = page.locator("table tbody tr").all()
+                    # Bucle de Paginación en CCMA
+                    current_page = 1
                     month_data_count = 0
                     
                     db = SessionLocal()
                     try:
-                        for row in rows:
-                            cols = row.locator("td").all_inner_texts()
-                            if len(cols) >= 10:
-                                periodo = cols[1].strip()
-                                concepto = cols[2].strip()
-                                vencimiento = cols[3].strip()
-                                capital = clean_currency(cols[4])
-                                int_resarcitorio = clean_currency(cols[5])
-                                int_punitorio = clean_currency(cols[6])
-                                total = clean_currency(cols[7])
-                                estado = cols[8].strip()
-                                expediente = cols[9].strip()
+                        while True:
+                            # Extraer filas de la tabla
+                            rows = page.locator("table tbody tr").all()
+                            logger.info(f"Procesando página {current_page} del mes {month}. Filas encontradas: {len(rows)}")
+                            
+                            for row in rows:
+                                cols = row.locator("td").all_inner_texts()
+                                if len(cols) >= 10:
+                                    periodo = cols[1].strip()
+                                    concepto = cols[2].strip()
+                                    vencimiento = cols[3].strip()
+                                    capital = clean_currency(cols[4])
+                                    int_resarcitorio = clean_currency(cols[5])
+                                    int_punitorio = clean_currency(cols[6])
+                                    total = clean_currency(cols[7])
+                                    estado = cols[8].strip()
+                                    expediente = cols[9].strip()
+                                    
+                                    if periodo and concepto:
+                                        # 1. Obtener o crear Deuda
+                                        deuda = db.query(Deuda).filter_by(cuit=metadata["cuit"], periodo=periodo, concepto=concepto).first()
+                                        if not deuda:
+                                            deuda = Deuda(cuit=metadata["cuit"], periodo=periodo, concepto=concepto, vencimiento=vencimiento)
+                                            db.add(deuda)
+                                            db.flush()
+                                        else:
+                                            deuda.vencimiento = vencimiento
+                                        
+                                        # 2. Obtener o crear DeudaSnapshot para esta corte (month)
+                                        snapshot = db.query(DeudaSnapshot).filter_by(deuda_id=deuda.id, corte=month).first()
+                                        if not snapshot:
+                                            snapshot = DeudaSnapshot(deuda_id=deuda.id, corte=month)
+                                            db.add(snapshot)
+                                        
+                                        snapshot.capital = capital
+                                        snapshot.interes_resarcitorio = int_resarcitorio
+                                        snapshot.interes_punitorio = int_punitorio
+                                        snapshot.total = total
+                                        snapshot.estado = estado
+                                        snapshot.expediente = expediente
+                                        
+                                        row_data = {
+                                            "corte": month,
+                                            "usuario": username,
+                                            "cuit": metadata["cuit"],
+                                            "contribuyente": metadata["nombre"],
+                                            "periodo": periodo,
+                                            "concepto": concepto,
+                                            "vencimiento": vencimiento,
+                                            "capital": capital,
+                                            "int_resarcitorio": int_resarcitorio,
+                                            "int_punitorio": int_punitorio,
+                                            "total": total,
+                                            "estado": estado,
+                                            "expediente": expediente
+                                        }
+                                        data.append(row_data)
+                                        month_data_count += 1
+                            
+                            # Buscar si hay un botón Siguiente / Next / >
+                            next_selectors = [
+                                "button:has-text('Siguiente')", 
+                                "a:has-text('Siguiente')", 
+                                "button:has-text('Next')", 
+                                "a:has-text('Next')", 
+                                "button:has-text('>')", 
+                                "a:has-text('>')",
+                                ".pagination-next",
+                                "[class*='pagination'] a:has-text('>')",
+                                "[class*='pagination'] button:has-text('>')"
+                            ]
+                            
+                            next_btn = None
+                            for selector in next_selectors:
+                                try:
+                                    loc = page.locator(selector).first
+                                    # Asegurarnos de que está visible y no tenga atributo disabled
+                                    if loc.is_visible(timeout=500):
+                                        is_disabled = loc.get_attribute("disabled") is not None or "disabled" in (loc.get_attribute("class") or "").lower()
+                                        if not is_disabled:
+                                            next_btn = loc
+                                            logger.info(f"Botón de siguiente página encontrado con selector: '{selector}'")
+                                            break
+                                except Exception:
+                                    continue
+                            
+                            if next_btn:
+                                logger.info(f"Yendo a la siguiente página (Pág {current_page + 1}) del mes {month}...")
+                                next_btn.click()
+                                page.wait_for_load_state("networkidle")
+                                time.sleep(1)
+                                handle_interruptions(page)
+                                current_page += 1
+                            else:
+                                # No hay más páginas
+                                break
                                 
-                                if periodo and concepto:
-                                    # 1. Obtener o crear Deuda
-                                    deuda = db.query(Deuda).filter_by(cuit=metadata["cuit"], periodo=periodo, concepto=concepto).first()
-                                    if not deuda:
-                                        deuda = Deuda(cuit=metadata["cuit"], periodo=periodo, concepto=concepto, vencimiento=vencimiento)
-                                        db.add(deuda)
-                                        db.flush()
-                                    else:
-                                        deuda.vencimiento = vencimiento
-                                    
-                                    # 2. Obtener o crear DeudaSnapshot para esta corte (month)
-                                    snapshot = db.query(DeudaSnapshot).filter_by(deuda_id=deuda.id, corte=month).first()
-                                    if not snapshot:
-                                        snapshot = DeudaSnapshot(deuda_id=deuda.id, corte=month)
-                                        db.add(snapshot)
-                                    
-                                    snapshot.capital = capital
-                                    snapshot.interes_resarcitorio = int_resarcitorio
-                                    snapshot.interes_punitorio = int_punitorio
-                                    snapshot.total = total
-                                    snapshot.estado = estado
-                                    snapshot.expediente = expediente
-                                    
-                                    row_data = {
-                                        "corte": month,
-                                        "usuario": username,
-                                        "cuit": metadata["cuit"],
-                                        "contribuyente": metadata["nombre"],
-                                        "periodo": periodo,
-                                        "concepto": concepto,
-                                        "vencimiento": vencimiento,
-                                        "capital": capital,
-                                        "int_resarcitorio": int_resarcitorio,
-                                        "int_punitorio": int_punitorio,
-                                        "total": total,
-                                        "estado": estado,
-                                        "expediente": expediente
-                                    }
-                                    data.append(row_data)
-                                    month_data_count += 1
-                        
                         db.commit()
-                        logger.info(f"Mes {month}: Se extrajeron y guardaron {month_data_count} registros en la base de datos.")
+                        logger.info(f"Mes {month}: Se extrajeron y guardaron {month_data_count} registros en la base de datos en {current_page} páginas.")
                     except Exception as dbe:
                         logger.error(f"Error de base de datos en mes {month} para {username}: {str(dbe)}")
                         db.rollback()

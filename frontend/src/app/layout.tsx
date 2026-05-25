@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import QueryAssistant from "@/components/QueryAssistant";
 import { getLatestCorte, getTaxpayersSummary } from "@/lib/queries";
 
 const geistSans = Geist({
@@ -42,6 +43,7 @@ export default function RootLayout({
             </main>
           </div>
         </div>
+        <QueryAssistant />
       </body>
     </html>
   );

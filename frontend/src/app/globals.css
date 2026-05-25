@@ -71,6 +71,7 @@ body {
   border-radius: 16px;
   box-shadow: var(--shadow-card);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1.75rem !important; /* Aumentado de p-5 (1.25rem) para dar más aire y evitar que esté apretado */
 }
 
 .glass-panel:hover {
@@ -81,20 +82,20 @@ body {
 
 /* Page Layout Components */
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 1450px; /* Incrementado para pantallas grandes */
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2.5rem; /* Aumentado de 2rem */
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem; /* Aumentado de 2rem */
 }
 
 /* Sidebar navigation toggle options */
 .sidebar-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 2rem;
-  min-height: calc(100vh - 4rem);
+  grid-template-columns: 310px 1fr; /* Aumentado ancho de la barra lateral para CUITs */
+  gap: 2.5rem; /* Aumentado de 2rem */
+  min-height: calc(100vh - 5rem);
 }
 
 @media (max-width: 1024px) {
@@ -118,17 +119,17 @@ body {
 .custom-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 8px;
+  border-spacing: 0 10px; /* Aumentado para dar espacio entre filas */
 }
 
 .custom-table th {
-  padding: 12px 16px;
+  padding: 14px 20px; /* Aumentado de 12px 16px */
   color: var(--text-secondary);
   font-weight: 600;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: 0.95rem; /* Aumentado de 0.875rem */
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -144,11 +145,11 @@ body {
 }
 
 .custom-table td {
-  padding: 16px;
+  padding: 18px 20px; /* Aumentado de 16px */
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1.025rem; /* Aumentado de 0.95rem */
 }
 
 .custom-table td:first-child {
@@ -184,11 +185,11 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 5px 12px; /* Incrementado */
   border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 0.825rem; /* Aumentado de 0.75rem */
+  font-weight: 700; /* Más negrita */
+  letter-spacing: 0.03em;
 }
 
 .badge-success {
@@ -268,4 +269,28 @@ body {
 .calendar-cell.has-debt:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: var(--accent-red);
+}
+
+/* Correcciones de fuentes pequeñas globales para mayor legibilidad y menos apiñamiento */
+.text-xs {
+  font-size: 0.825rem !important; /* Aumentado de 0.75rem */
+}
+.text-\[10px\] {
+  font-size: 0.775rem !important; /* Aumentado de 10px */
+}
+.text-\[11px\] {
+  font-size: 0.8rem !important; /* Aumentado de 11px */
+}
+.text-sm {
+  font-size: 0.925rem !important; /* Aumentado de 0.875rem */
+}
+.btn {
+  font-size: 0.925rem !important;
+}
+.small {
+  font-size: 0.875rem !important; /* Aumentado de 13px */
+  color: var(--text-secondary) !important;
+}
+.card span {
+  line-height: 1.4;
 }
