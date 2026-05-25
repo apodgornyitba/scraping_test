@@ -93,7 +93,7 @@ body {
 /* Sidebar navigation toggle options */
 .sidebar-layout {
   display: grid;
-  grid-template-columns: 280px 1fr; /* Restaurado a un ancho óptimo para evitar desborde */
+  grid-template-columns: 290px minmax(0, 1fr); /* minmax(0, 1fr) es crítico para prevenir que tablas grandes empujen y rompan la barra lateral */
   gap: 2rem;
   min-height: calc(100vh - 4rem);
 }
@@ -272,22 +272,35 @@ body {
 }
 
 /* Ajustes específicos y seguros para legibilidad en la barra lateral e interfaz sin romper layouts */
+aside.glass-panel {
+  padding: 1rem !important; /* Más angosto para evitar desborde del contenido interno en la barra lateral */
+}
+aside .flex-1.flex.flex-col.gap-2\.5 {
+  gap: 1.5px !important; /* Espaciado ultra compacto entre ítems de contribuyentes */
+}
+aside a {
+  padding: 8px 10px !important; /* Paddings compactos para ítems */
+  gap: 4px !important;
+}
 aside .font-mono {
-  font-size: 0.775rem !important; /* CUIT legible */
+  font-size: 0.725rem !important; /* CUIT compacto y legible */
 }
 aside span.line-clamp-1 {
-  font-size: 0.925rem !important; /* Nombre legible en sidebar */
+  font-size: 0.85rem !important; /* Nombre perfectamente legible en sidebar sin romper */
 }
 aside .badge {
-  font-size: 0.7rem !important; /* Insignias compactas */
-  padding: 2px 6px !important;
+  font-size: 0.65rem !important; /* Insignias de régimen e IVA hiper compactas */
+  padding: 1px 4px !important;
+}
+aside .text-xs {
+  font-size: 0.775rem !important; /* Texto de deudas en sidebar */
 }
 .custom-table tbody tr td:first-child a {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.925rem;
 }
 .small {
-  font-size: 0.85rem !important;
+  font-size: 0.825rem !important;
   color: var(--text-secondary) !important;
 }
 .card span {

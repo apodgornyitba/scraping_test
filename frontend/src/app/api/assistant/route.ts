@@ -33,14 +33,13 @@ export async function POST(req: Request) {
     // Obtener todos los contribuyentes para cruzar nombres
     const contribuyentes = db.prepare('SELECT * FROM contribuyentes').all() as any[];
 
-    // 1. Detección de Búsqueda por Contribuyente Específico (Nombre o CUIT)
+    // 1. Búsqueda por Contribuyente Específico (Nombre o CUIT)
     let matchedTaxpayer = null;
     for (const c of contribuyentes) {
       const normNombre = normalizeText(c.nombre);
       const normUsuario = normalizeText(c.usuario);
       const cuitLimpio = c.cuit.replace(/-/g, '');
       
-      // Si la consulta contiene el CUIT o partes distintivas del nombre
       if (
         normQuery.includes(cuitLimpio) ||
         normQuery.includes(c.cuit) ||
@@ -91,28 +90,28 @@ export async function POST(req: Request) {
       const punitorioAmount = totals?.punitorio || 0;
       const cantObligaciones = totals?.cant_obligaciones || 0;
 
-      let answer = `Aquí tienes el perfil y el estado de cuenta consolidado para **${matchedTaxpayer.nombre}** (CUIT: \`${matchedTaxpayer.cuit}\`).\n\n`;
+      let answer = `Detalle de cuenta consolidada para el contribuyente **${matchedTaxpayer.nombre}** (CUIT: \`${matchedTaxpayer.cuit}\`).\n\n`;
       
       if (totalAmount > 0) {
-        answer += `Actualmente posee una **deuda consolidada de ${formatCurrency(totalAmount)}** distribuida en **${cantObligaciones} obligaciones activas** al corte de ${latestCorte}.\n\n`;
-        answer += `**Desglose Tributario:**\n`;
-        answer += `- 🧾 **Capital Puro**: ${formatCurrency(capitalAmount)}\n`;
-        answer += `- ⚡ **Intereses Resarcitorios**: ${formatCurrency(resarcitorioAmount)}\n`;
+        answer += `El saldo deudor total es de **${formatCurrency(totalAmount)}** distribuido en **${cantObligaciones} obligaciones activas** al corte de ${latestCorte}.\n\n`;
+        answer += `**Composicion del Saldo de Deuda:**\n`;
+        answer += `- **Capital Principal**: ${formatCurrency(capitalAmount)}\n`;
+        answer += `- **Intereses Resarcitorios**: ${formatCurrency(resarcitorioAmount)}\n`;
         if (punitorioAmount > 0) {
-          answer += `- ⚖️ **Intereses Punitorios**: ${formatCurrency(punitorioAmount)}\n`;
+          answer += `- **Intereses Punitorios**: ${formatCurrency(punitorioAmount)}\n`;
         }
-        answer += `\n**Datos de Contacto e Inscripción:**\n`;
-        answer += `- **Régimen**: ${matchedTaxpayer.regimen}\n`;
-        answer += `- **Actividad**: ${matchedTaxpayer.actividad}\n`;
+        answer += `\n**Datos de Registro y Situacion Fiscal:**\n`;
+        answer += `- **Regimen Tributario**: ${matchedTaxpayer.regimen}\n`;
+        answer += `- **Actividad Economica**: ${matchedTaxpayer.actividad}\n`;
         answer += `- **Score de Cumplimiento**: \`${matchedTaxpayer.score_cumplimiento}/100\`\n`;
-        answer += `- **Riesgo Fiscal**: **${matchedTaxpayer.riesgo_fiscal.toUpperCase()}**\n`;
-        if (matchedTaxpayer.email) answer += `- **Email**: \`${matchedTaxpayer.email}\`\n`;
-        if (matchedTaxpayer.domicilio) answer += `- **Domicilio**: ${matchedTaxpayer.domicilio}\n`;
+        answer += `- **Riesgo Fiscal Asignado**: **${matchedTaxpayer.riesgo_fiscal.toUpperCase()}**\n`;
+        if (matchedTaxpayer.email) answer += `- **Email Fiscal**: \`${matchedTaxpayer.email}\`\n`;
+        if (matchedTaxpayer.domicilio) answer += `- **Domicilio Fiscal**: ${matchedTaxpayer.domicilio}\n`;
       } else {
-        answer += `🎉 ¡Excelente! **${matchedTaxpayer.nombre}** se encuentra al día y **no registra deuda tributaria activa** en el último corte de ${latestCorte}.\n\n`;
-        answer += `**Detalles del perfil:**\n`;
-        answer += `- **Régimen**: ${matchedTaxpayer.regimen}\n`;
-        answer += `- **Riesgo Fiscal**: **${matchedTaxpayer.riesgo_fiscal.toUpperCase()}** (Score de cumplimiento: \`${matchedTaxpayer.score_cumplimiento}/100\`)\n`;
+        answer += `El contribuyente **${matchedTaxpayer.nombre}** se encuentra regularizado y **no registra deuda activa** al corte de ${latestCorte}.\n\n`;
+        answer += `**Resumen de Situacion:**\n`;
+        answer += `- **Regimen Tributario**: ${matchedTaxpayer.regimen}\n`;
+        answer += `- **Riesgo Fiscal Asignado**: **${matchedTaxpayer.riesgo_fiscal.toUpperCase()}** (Score de cumplimiento: \`${matchedTaxpayer.score_cumplimiento}/100\`)\n`;
       }
 
       return NextResponse.json({
@@ -127,13 +126,13 @@ export async function POST(req: Request) {
             resarcitorio: resarcitorioAmount,
             punitorio: punitorioAmount,
             obligaciones: cantObligaciones,
-            activeDebts: activeDebts.slice(0, 5) // Mostrar máximo las últimas 5 deudas activas
+            activeDebts: activeDebts.slice(0, 5)
           }
         }
       });
     }
 
-    // 2. Detección de Deuda Total Consolidada / General
+    // 2. Deuda Total Consolidada / General
     if (
       normQuery.includes('deuda total') || 
       normQuery.includes('deuda consolidada') || 
@@ -162,14 +161,14 @@ export async function POST(req: Request) {
       const totalPunitorio = stats?.totalPunitorio || 0;
       const activeObligations = stats?.activeObligationsCount || 0;
 
-      const answer = `El **saldo total de deuda consolidada** administrado en la plataforma al corte de **${latestCorte}** es de **${formatCurrency(totalDebt)}**.\n\n` +
-        `**Resumen General del Sistema:**\n` +
-        `- 👥 **Contribuyentes en seguimiento**: **${countRow.count}**\n` +
-        `- 📦 **Obligaciones con deuda activa**: **${activeObligations}**\n\n` +
-        `**Composición Tributaria Consolidad:**\n` +
-        `- 📊 **Capital de origen**: ${formatCurrency(totalCapital)}\n` +
-        `- ⚡ **Intereses Resarcitorios**: ${formatCurrency(totalResarcitorio)}\n` +
-        `- ⚖️ **Intereses Punitorios**: ${formatCurrency(totalPunitorio)}`;
+      const answer = `El **saldo total acumulado de deudas consolidadas** en la plataforma al corte de **${latestCorte}** es de **${formatCurrency(totalDebt)}**.\n\n` +
+        `**Estado General del Sistema:**\n` +
+        `- **Contribuyentes en seguimiento**: **${countRow.count}**\n` +
+        `- **Obligaciones con saldo deudor**: **${activeObligations}**\n\n` +
+        `**Composicion del Saldo Acumulado:**\n` +
+        `- **Capital Principal**: ${formatCurrency(totalCapital)}\n` +
+        `- **Intereses Resarcitorios**: ${formatCurrency(totalResarcitorio)}\n` +
+        `- **Intereses Punitorios**: ${formatCurrency(totalPunitorio)}`;
 
       return NextResponse.json({
         intent: 'total_debt',
@@ -189,7 +188,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 3. Detección de Máximo Deudor / Mayor Deuda
+    // 3. Máximo Deudor / Mayor Deuda
     if (
       normQuery.includes('deudor principal') || 
       normQuery.includes('mayor deudor') || 
@@ -216,11 +215,11 @@ export async function POST(req: Request) {
       const top = db.prepare(topDebtorQuery).get(latestCorte) as any;
 
       if (top) {
-        const answer = `El **principal deudor consolidado** registrado en la base de datos es **${top.nombre}** (CUIT: \`${top.cuit}\`), con una deuda total activa de **${formatCurrency(top.total_deuda)}** distribuida en **${top.cant_deudas} obligaciones** vencidas.\n\n` +
-          `**Detalles Clave:**\n` +
-          `- **Régimen**: ${top.regimen}\n` +
-          `- **Riesgo Fiscal**: **${top.riesgo_fiscal.toUpperCase()}**\n\n` +
-          `_Puedes hacer clic en su nombre en la lista lateral para ingresar a su perfil y ver su evolución histórica de deudas de 30 meses._`;
+        const answer = `El **principal deudor del sistema** es **${top.nombre}** (CUIT: \`${top.cuit}\`), registrando un saldo deudor total de **${formatCurrency(top.total_deuda)}** distribuido en **${top.cant_deudas} obligaciones** vencidas.\n\n` +
+          `**Datos de Registro:**\n` +
+          `- **Regimen Tributario**: ${top.regimen}\n` +
+          `- **Riesgo Fiscal Asignado**: **${top.riesgo_fiscal.toUpperCase()}**\n\n` +
+          `Para mayor informacion o desglose de sus deudas, puede dirigirse a su perfil individual en la barra de navegacion lateral.`;
 
         return NextResponse.json({
           intent: 'top_debtor',
@@ -233,7 +232,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Detección de Embargos
+    // 4. Embargos
     if (
       normQuery.includes('embargo') || 
       normQuery.includes('embargados') || 
@@ -248,9 +247,9 @@ export async function POST(req: Request) {
       const list = db.prepare(embargosQuery).all() as any[];
       const count = list.reduce((acc, curr) => acc + curr.embargos_activos, 0);
 
-      let answer = `Se han detectado **${list.length} contribuyentes con embargos activos** preventivos en el sistema, acumulando un total de **${count} medidas cautelares** vigentes:\n\n`;
+      let answer = `Se registraron **${list.length} contribuyentes con medidas cautelares activas**, acumulando un total de **${count} embargos vigentes**:\n\n`;
       list.forEach((c) => {
-        answer += `- 🛑 **${c.nombre}** (${c.regimen}) posee **${c.embargos_activos}** embargo(s) activos. (Riesgo: ${c.riesgo_fiscal.toUpperCase()})\n`;
+        answer += `- **${c.nombre}** (${c.regimen}): **${c.embargos_activos}** embargo(s) activo(s). (Riesgo: ${c.riesgo_fiscal.toUpperCase()})\n`;
       });
 
       return NextResponse.json({
@@ -258,13 +257,13 @@ export async function POST(req: Request) {
         answer,
         card: {
           type: 'list',
-          title: 'Embargos Activos de Apremio',
+          title: 'Detalle de Embargos Activos',
           data: list
         }
       });
     }
 
-    // 5. Detección de Riesgo Fiscal Alto / General
+    // 5. Riesgo Fiscal Alto / General
     if (
       normQuery.includes('riesgo') || 
       normQuery.includes('riesgo fiscal')
@@ -294,11 +293,11 @@ export async function POST(req: Request) {
         : db.prepare(riskQuery).all(latestCorte);
 
       let answer = riskFilter
-        ? `Se encontraron **${list.length} contribuyentes** clasificados con **Riesgo Fiscal ${riskFilter.toUpperCase()}**:\n\n`
-        : `Aquí está el resumen del **Riesgo Fiscal** y saldos consolidados de todos los contribuyentes:\n\n`;
+        ? `Se identificaron **${list.length} contribuyentes** clasificados con **Riesgo Fiscal ${riskFilter.toUpperCase()}**:\n\n`
+        : `Resumen general de **Riesgo Fiscal** y saldo consolidado por contribuyente:\n\n`;
 
       list.forEach((c: any) => {
-        answer += `- 👤 **${c.nombre}** (Riesgo: **${c.riesgo_fiscal.toUpperCase()}**): Deuda total consolidada de **${formatCurrency(c.total || 0)}**\n`;
+        answer += `- **${c.nombre}** (Riesgo: **${c.riesgo_fiscal.toUpperCase()}**): Saldo consolidado de **${formatCurrency(c.total || 0)}**\n`;
       });
 
       return NextResponse.json({
@@ -306,7 +305,7 @@ export async function POST(req: Request) {
         answer,
         card: {
           type: 'list',
-          title: riskFilter ? `Riesgo Fiscal ${riskFilter.toUpperCase()}` : 'Riesgo Fiscal Consolidado',
+          title: riskFilter ? `Riesgo Fiscal ${riskFilter.toUpperCase()}` : 'Riesgo Fiscal General',
           data: list
         }
       });
@@ -339,9 +338,9 @@ export async function POST(req: Request) {
       `;
       const list = db.prepare(regimeQuery).all(latestCorte, regimeFilter) as any[];
 
-      let answer = `Se encontraron **${list.length} contribuyentes** bajo el régimen de **${isMono ? 'Monotributo' : 'Responsable Inscripto'}**:\n\n`;
+      let answer = `Se registraron **${list.length} contribuyentes** bajo el regimen de **${isMono ? 'Monotributo' : 'Responsable Inscripto'}**:\n\n`;
       list.forEach((c) => {
-        answer += `- 👤 **${c.nombre}** (Riesgo: ${c.riesgo_fiscal.toUpperCase()}): Deuda de **${formatCurrency(c.total || 0)}**\n`;
+        answer += `- **${c.nombre}** (Riesgo: ${c.riesgo_fiscal.toUpperCase()}): Saldo consolidado de **${formatCurrency(c.total || 0)}**\n`;
       });
 
       return NextResponse.json({
@@ -349,7 +348,7 @@ export async function POST(req: Request) {
         answer,
         card: {
           type: 'list',
-          title: isMono ? 'Monotributistas' : 'Responsables Inscriptos',
+          title: isMono ? 'Contribuyentes Monotributistas' : 'Responsables Inscriptos',
           data: list
         }
       });
@@ -379,9 +378,9 @@ export async function POST(req: Request) {
       `;
       const list = db.prepare(vencimientosQuery).all(latestCorte) as any[];
 
-      let answer = `Aquí tienes una lista de las **próximas obligaciones vencidas / activas con deuda** al corte ${latestCorte} ordenadas cronológicamente:\n\n`;
+      let answer = `Cronograma de obligaciones pendientes con saldo deudor al corte ${latestCorte} ordenadas cronologicamente:\n\n`;
       list.forEach((v) => {
-        answer += `- 🗓️ **${v.vencimiento}** - **${v.contribuyente}**: ${v.concepto} (Per. ${v.periodo}) - **${formatCurrency(v.total)}** [${v.estado}]\n`;
+        answer += `- **${v.vencimiento}** - **${v.contribuyente}**: ${v.concepto} (Periodo: ${v.periodo}) - **${formatCurrency(v.total)}** [${v.estado}]\n`;
       });
 
       return NextResponse.json({
@@ -394,17 +393,17 @@ export async function POST(req: Request) {
       });
     }
 
-    // Respuesta por defecto si no encaja en las anteriores intenciones NLP
-    const defaultAnswer = `Hola, soy tu **Asistente Tributario ARCA**. Puedo ayudarte a realizar consultas complejas sobre la base de datos relacional de deudas consolidadas al corte **${latestCorte}** de forma inmediata.\n\n` +
-      `**Puedes preguntarme cosas como:**\n` +
-      `- 💰 *"¿Cuánto es la deuda total consolidada?"* o *"deuda general"*\n` +
-      `- 👤 *"Deuda de Leandro Dominguez"* o *"datos de Camila"* (búsqueda por nombre)\n` +
-      `- 🛑 *"¿Quiénes tienen embargos activos?"*\n` +
-      `- 🚨 *"quien tiene mayor deuda"* o *"deudor principal"*\n` +
-      `- ⚡ *"quiénes tienen riesgo fiscal alto"* o *"riesgo fiscal general"*\n` +
-      `- 📋 *"Monotributistas"* o *"Responsables Inscriptos"*\n` +
-      `- 🗓️ *"Vencimientos próximos"*\n\n` +
-      `¡Escribe tu pregunta o haz clic en alguno de los botones rápidos de abajo!`;
+    // Respuesta por defecto
+    const defaultAnswer = `Bienvenido al **Asistente Tributario de Monitoreo**. Estoy capacitado para realizar búsquedas complejas y proveer detalles analíticos sobre la base de datos relacional consolidada al corte **${latestCorte}**.\n\n` +
+      `**Consultas frecuentes que puedes realizar:**\n` +
+      `- Mostrar el saldo consolidado general o total adeudado en la plataforma.\n` +
+      `- Buscar contribuyentes por su nombre para ver su desglose e informacion fiscal (ejemplo: "Deuda de Leandro Dominguez" o "situacion de Camila").\n` +
+      `- Listar aquellos contribuyentes que registren embargos activos de apremio en el sistema.\n` +
+      `- Identificar al maximo deudor registrado en la base de datos tributaria.\n` +
+      `- Filtrar contribuyentes segun su categoria de riesgo fiscal (alto, medio o bajo).\n` +
+      `- Listar contribuyentes monotributistas o responsables inscriptos.\n` +
+      `- Consultar el cronograma de proximos vencimientos de obligaciones impagas.\n\n` +
+      `Por favor, escriba su consulta en la barra inferior o presione alguno de los accesos de consulta rapida.`;
 
     return NextResponse.json({
       intent: 'unknown',
