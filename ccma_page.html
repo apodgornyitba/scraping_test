@@ -1,0 +1,577 @@
+<!DOCTYPE html><html><head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>CCMA</title>
+      <style>
+        :root {
+          --fg: #1f2937;
+          --muted: #5b6474;
+          --card: #ffffff;
+          --line: #d8dee8;
+          --accent: #0f766e;
+          --bad: #b91c1c;
+          --ok: #15803d;
+          --warn: #7c2d12;
+        }
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          color: var(--fg);
+          font: 15px/1.5 "Segoe UI", Tahoma, sans-serif;
+          background:
+            radial-gradient(circle at 15% 0%, #f7efe8, #f8fafc 38%),
+            radial-gradient(circle at 90% 80%, #ecfdf5, transparent 30%);
+        }
+        .shell { width: min(1180px, 94vw); margin: 20px auto 28px; }
+        .top {
+          display: flex;
+          gap: 12px;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          border: 1px solid var(--line);
+          border-radius: 12px;
+          background: var(--card);
+          padding: 12px;
+          margin-bottom: 12px;
+        }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        a.btn,
+        button,
+        input[type="submit"] {
+          text-decoration: none;
+          border: 1px solid #b6c2d1;
+          color: #122335;
+          background: #f9fafb;
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        button.link {
+          border: 0;
+          background: none;
+          text-decoration: underline;
+          color: #0f766e;
+          padding: 0;
+          border-radius: 0;
+        }
+        a.btn.primary,
+        button.primary,
+        input[type="submit"] {
+          color: #fff;
+          border-color: #0f766e;
+          background: linear-gradient(180deg, #0f766e, #0f5f5a);
+        }
+        .card {
+          background: #fff;
+          border: 1px solid var(--line);
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+        }
+        h1 { margin: 0 0 10px; font-size: 22px; }
+        p.note { margin-top: 0; color: var(--muted); }
+        .small { color: var(--muted); font-size: 13px; }
+        .badge {
+          display: inline-block;
+          background: #e6fffa;
+          color: #0f766e;
+          border: 1px solid #99f6e4;
+          border-radius: 999px;
+          padding: 2px 8px;
+          font-size: 12px;
+          font-weight: 700;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid var(--line); text-align: left; padding: 8px; vertical-align: top; }
+        .status-paid { color: var(--ok); font-weight: 700; }
+        .status-debt { color: var(--bad); font-weight: 700; }
+        .status-judicial { color: var(--warn); font-weight: 700; }
+        .status-vep { color: #0f766e; font-weight: 700; }
+        .status-chip {
+          width: 16px;
+          height: 16px;
+          border-radius: 999px;
+          border: 1px solid #cbd5e1;
+          display: inline-block;
+        }
+        .status-ok { background: #16a34a; }
+        .status-debt-dot { background: #dc2626; }
+        .status-judicial-dot { background: #b45309; }
+        .status-vep-dot { background: #0f766e; }
+        .date-form { display: flex; gap: 8px; align-items: center; }
+        iframe { width: 100%; height: 520px; border: 1px solid var(--line); border-radius: 8px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .flash {
+          margin-bottom: 10px;
+          border-radius: 8px;
+          padding: 9px 12px;
+          border: 1px solid #99f6e4;
+          background: #ecfeff;
+          color: #0f766e;
+          font-weight: 700;
+        }
+        .right { text-align: right; }
+        @media (max-width: 1000px) {
+          .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 840px) {
+          .grid-2 { grid-template-columns: 1fr; }
+          .grid-4 { grid-template-columns: 1fr; }
+          .date-form { width: 100%; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="shell">
+        <header class="top">
+          <nav>
+            <a class="btn" data-nav-link="" href="/app">Inicio</a>
+            <a class="btn" data-nav-link="" href="/cuentas/ccma">CCMA</a>
+            <a class="btn" data-nav-link="" href="/cuentas/presentacion-ddjj-pagos">Presentacion de DDJJ y Pagos</a>
+            <a class="btn" data-nav-link="" href="/cuentas/mis-facilidades">Mis Facilidades</a>
+            <a class="btn" data-nav-link="" href="/cuentas/fiscalizaciones">Fiscalizaciones y Cobranzas</a>
+            <a class="btn" data-nav-link="" href="/cuentas/veps">VEPs</a>
+            <a class="btn" data-nav-link="" href="/cuentas/saldos-a-favor">Saldos a favor</a>
+          </nav>
+          <form method="post" action="/set-date" class="date-form">
+            <label for="global-date"><strong>Fecha de corte</strong></label>
+            <input id="global-date" name="selectedDate" type="month" required="" value="2025-06">
+            <input type="submit" value="Aplicar">
+          </form>
+        </header>
+        <main class="card">
+          
+          
+      <h1>CCMA - Cuenta Corriente de Monotributistas y Autonomos</h1>
+      <p class="note">Vista historica al corte 2025-06. Se listan todas las obligaciones vencidas hasta ese momento.</p>
+      <form method="post" action="/veps/generar">
+        <table>
+          <thead>
+            <tr>
+              <th>VEP</th>
+              <th>Periodo</th>
+              <th>Concepto</th>
+              <th>Vencimiento</th>
+              <th class="right">Capital</th>
+              <th class="right">Int. Resarcitorio</th>
+              <th class="right">Int. Punitorio</th>
+              <th class="right">Total</th>
+              <th>Estado</th>
+              <th>Expediente</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-01"></td>
+                  <td>2023-01</td>
+                  <td>Autonomos Categoria II - Ene 23</td>
+                  <td>2023-02-22</td>
+                  <td class="right">$&nbsp;58.337,86</td>
+                  <td class="right">$&nbsp;70.359,56</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;128.697,42</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-02"></td>
+                  <td>2023-02</td>
+                  <td>IVA - Saldo de declaracion jurada Feb 23</td>
+                  <td>2023-03-22</td>
+                  <td class="right">$&nbsp;492.441,45</td>
+                  <td class="right">$&nbsp;435.345,33</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;927.786,78</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-03"></td>
+                  <td>2023-03</td>
+                  <td>Aporte Trabajador Independiente - Mar 23</td>
+                  <td>2023-04-14</td>
+                  <td class="right">$&nbsp;67.236,88</td>
+                  <td class="right">$&nbsp;58.289,62</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;125.526,50</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-04"></td>
+                  <td>2023-04</td>
+                  <td>Autonomos Categoria III - Abr 23</td>
+                  <td>2023-05-11</td>
+                  <td class="right">$&nbsp;3.689,43</td>
+                  <td class="right">$&nbsp;4.582,57</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;8.272,00</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-05"></td>
+                  <td>2023-05</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada May 23</td>
+                  <td>2023-06-19</td>
+                  <td class="right">$&nbsp;402.109,28</td>
+                  <td class="right">$&nbsp;118.908,43</td>
+                  <td class="right">$&nbsp;653.210,09</td>
+                  <td class="right">$&nbsp;1.174.227,80</td>
+                  <td class="status-judicial">EJECUCION FISCAL</td>
+                  <td>EF-2023-0005/866</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-06"></td>
+                  <td>2023-06</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada Jun 23</td>
+                  <td>2023-07-20</td>
+                  <td class="right">$&nbsp;209.502,18</td>
+                  <td class="right">$&nbsp;98.161,33</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;307.663,51</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-07"></td>
+                  <td>2023-07</td>
+                  <td>SICORE - Percepciones omitidas Jul 23</td>
+                  <td>2023-08-22</td>
+                  <td class="right">$&nbsp;231.645,31</td>
+                  <td class="right">$&nbsp;161.304,18</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;392.949,49</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-08"></td>
+                  <td>2023-08</td>
+                  <td>IVA - Debito fiscal periodo Ago 23</td>
+                  <td>2023-09-19</td>
+                  <td class="right">$&nbsp;37.118,25</td>
+                  <td class="right">$&nbsp;27.041,32</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;64.159,57</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-09"></td>
+                  <td>2023-09</td>
+                  <td>IVA - Debito fiscal periodo Sep 23</td>
+                  <td>2023-10-17</td>
+                  <td class="right">$&nbsp;248.635,56</td>
+                  <td class="right">$&nbsp;59.645,88</td>
+                  <td class="right">$&nbsp;151.535,92</td>
+                  <td class="right">$&nbsp;459.817,36</td>
+                  <td class="status-judicial">EJECUCION FISCAL</td>
+                  <td>EF-2023-0009/588</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-10"></td>
+                  <td>2023-10</td>
+                  <td>IVA - Saldo de declaracion jurada Oct 23</td>
+                  <td>2023-11-11</td>
+                  <td class="right">$&nbsp;683.481,97</td>
+                  <td class="right">$&nbsp;512.896,79</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;1.196.378,76</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-11"></td>
+                  <td>2023-11</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada Nov 23</td>
+                  <td>2023-12-19</td>
+                  <td class="right">$&nbsp;158.259,10</td>
+                  <td class="right">$&nbsp;131.088,23</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;289.347,33</td>
+                  <td class="status-debt">IMPAGO</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2023-12"></td>
+                  <td>2023-12</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada Dic 23</td>
+                  <td>2024-01-13</td>
+                  <td class="right">$&nbsp;225.342,75</td>
+                  <td class="right">$&nbsp;93.314,32</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;318.657,07</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td>-</td>
+                  <td>2024-01</td>
+                  <td>Aporte Trabajador Independiente - Ene 24</td>
+                  <td>2024-02-14</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="status-paid">SIN DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-02"></td>
+                  <td>2024-02</td>
+                  <td>IVA - Saldo de declaracion jurada Feb 24</td>
+                  <td>2024-03-20</td>
+                  <td class="right">$&nbsp;123.677,38</td>
+                  <td class="right">$&nbsp;66.167,07</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;189.844,45</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-03"></td>
+                  <td>2024-03</td>
+                  <td>SICORE - Percepciones omitidas Mar 24</td>
+                  <td>2024-04-11</td>
+                  <td class="right">$&nbsp;117.488,58</td>
+                  <td class="right">$&nbsp;30.666,97</td>
+                  <td class="right">$&nbsp;23.512,63</td>
+                  <td class="right">$&nbsp;171.668,18</td>
+                  <td class="status-judicial">EJECUCION FISCAL</td>
+                  <td>EF-2024-0015/627</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-04"></td>
+                  <td>2024-04</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada Abr 24</td>
+                  <td>2024-05-22</td>
+                  <td class="right">$&nbsp;6.861,14</td>
+                  <td class="right">$&nbsp;1.453,43</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;8.314,57</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-05"></td>
+                  <td>2024-05</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada May 24</td>
+                  <td>2024-06-18</td>
+                  <td class="right">$&nbsp;98.646,49</td>
+                  <td class="right">$&nbsp;43.126,46</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;141.772,95</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td>-</td>
+                  <td>2024-06</td>
+                  <td>SICORE - Retenciones practicadas Jun 24</td>
+                  <td>2024-07-18</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="status-paid">SIN DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-07"></td>
+                  <td>2024-07</td>
+                  <td>Autonomos Categoria II - Jul 24</td>
+                  <td>2024-08-16</td>
+                  <td class="right">$&nbsp;13.802,69</td>
+                  <td class="right">$&nbsp;3.756,43</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;17.559,12</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td>-</td>
+                  <td>2024-08</td>
+                  <td>IVA - Ajuste tecnico por actividad gravada Ago 24</td>
+                  <td>2024-09-10</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="status-paid">SIN DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td>-</td>
+                  <td>2024-09</td>
+                  <td>Autonomos Categoria III - Sep 24</td>
+                  <td>2024-10-13</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="status-paid">SIN DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-10"></td>
+                  <td>2024-10</td>
+                  <td>IVA - Saldo de declaracion jurada Oct 24</td>
+                  <td>2024-11-13</td>
+                  <td class="right">$&nbsp;240.230,52</td>
+                  <td class="right">$&nbsp;63.765,50</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;303.996,02</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>EF-2024-0022/194</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-11"></td>
+                  <td>2024-11</td>
+                  <td>SICORE - Percepciones omitidas Nov 24</td>
+                  <td>2024-12-21</td>
+                  <td class="right">$&nbsp;51.137,33</td>
+                  <td class="right">$&nbsp;11.708,43</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;62.845,76</td>
+                  <td class="status-debt"></td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2024-12"></td>
+                  <td>2024-12</td>
+                  <td>Aporte Trabajador Independiente - Dic 24</td>
+                  <td>2025-01-21</td>
+                  <td class="right">$&nbsp;15.061,52</td>
+                  <td class="right">$&nbsp;1.147,11</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;16.208,63</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2025-01"></td>
+                  <td>2025-01</td>
+                  <td>IVA - Debito fiscal periodo Ene 25</td>
+                  <td>2025-02-17</td>
+                  <td class="right">$&nbsp;25.947,09</td>
+                  <td class="right">$&nbsp;3.113,94</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;29.061,03</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2025-02"></td>
+                  <td>2025-02</td>
+                  <td>IVA - Saldo de declaracion jurada Feb 25</td>
+                  <td>2025-03-17</td>
+                  <td class="right">$&nbsp;10.935,75</td>
+                  <td class="right">$&nbsp;693,97</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;11.629,72</td>
+                  <td class="status-debt">CON DEUDA</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2025-03"></td>
+                  <td>2025-03</td>
+                  <td>IVA - Debito fiscal periodo Mar 25</td>
+                  <td>2025-04-16</td>
+                  <td class="right">$&nbsp;398.177,54</td>
+                  <td class="right">$&nbsp;33.575,72</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;431.753,26</td>
+                  <td class="status-debt">IMPAGO</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2025-04"></td>
+                  <td>2025-04</td>
+                  <td>SICORE - Percepciones omitidas Abr 25</td>
+                  <td>2025-05-21</td>
+                  <td class="right">$&nbsp;202.427,06</td>
+                  <td class="right">$&nbsp;8.931,56</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;211.358,62</td>
+                  <td class="status-debt">IMPAGO</td>
+                  <td>-</td>
+                </tr><tr>
+                  <td><input type="checkbox" name="obligationIds" value="OBL-U421638-2025-05"></td>
+                  <td>2025-05</td>
+                  <td>Autonomos Categoria III - May 25</td>
+                  <td>2025-06-12</td>
+                  <td class="right">$&nbsp;137.120,71</td>
+                  <td class="right">$&nbsp;2.690,24</td>
+                  <td class="right">$&nbsp;0,00</td>
+                  <td class="right">$&nbsp;139.810,95</td>
+                  <td class="status-debt"></td>
+                  <td>-</td>
+                </tr>
+          </tbody>
+        </table>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <div class="small">Seleccionadas para VEP: solo obligaciones con deuda sin VEP vigente.</div>
+          <button class="primary" type="submit">Generar VEP</button>
+        </div>
+      </form>
+      <div class="small" style="margin-top:10px">Cantidad de periodos con deuda al corte: <strong>25</strong></div>
+    
+        </main>
+      </div>
+      
+    <script>
+      (function () {
+        var INTERRUPTION_RATE = 0.24;
+        var MAX_INTERRUPTION_PER_PAGE = 1;
+        var shownCount = 0;
+
+        function maybeShow(onClose) {
+          if (shownCount >= MAX_INTERRUPTION_PER_PAGE) {
+            return false;
+          }
+          if (Math.random() >= INTERRUPTION_RATE) {
+            return false;
+          }
+          shownCount += 1;
+          showInterruption(onClose);
+          return true;
+        }
+
+        function installInterruption() {
+          var navTargets = document.querySelectorAll('[data-nav-link]');
+          navTargets.forEach(function (node) {
+            node.addEventListener('click', function (ev) {
+              if (maybeShow(function () { window.location.href = node.getAttribute('href'); })) {
+                ev.preventDefault();
+              }
+            });
+          });
+          maybeShow();
+        }
+
+        function showInterruption(onClose) {
+          if (document.querySelector('[data-interruption="1"]')) return;
+          var overlay = document.createElement('div');
+          overlay.setAttribute('data-interruption', '1');
+          overlay.style.position = 'fixed';
+          overlay.style.inset = '0';
+          overlay.style.background = 'rgba(15, 23, 42, 0.55)';
+          overlay.style.display = 'grid';
+          overlay.style.placeItems = 'center';
+          overlay.style.zIndex = '9999';
+
+          var panel = document.createElement('div');
+          panel.style.width = 'min(460px, 92vw)';
+          panel.style.background = '#fff';
+          panel.style.borderRadius = '10px';
+          panel.style.padding = '20px';
+          panel.style.boxShadow = '0 18px 32px rgba(0,0,0,0.16)';
+          panel.innerHTML = '<h3 style="margin:0 0 8px">Aviso operativo ARCA</h3><p style="margin:0 0 14px">Se detecto una novedad del sistema. Cierre este aviso para continuar.</p>';
+
+          var close = document.createElement('button');
+          close.type = 'button';
+          close.textContent = 'Cerrar aviso';
+          close.style.background = '#0f172a';
+          close.style.color = '#fff';
+          close.style.border = 'none';
+          close.style.padding = '9px 12px';
+          close.style.borderRadius = '8px';
+          close.style.cursor = 'pointer';
+          close.addEventListener('click', function () {
+            overlay.remove();
+            if (onClose) onClose();
+          });
+
+          panel.appendChild(close);
+          overlay.appendChild(panel);
+          document.body.appendChild(overlay);
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', installInterruption);
+        } else {
+          installInterruption();
+        }
+      })();
+    </script>
+  
+    <script defer="" src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;7eef89df39244efda38cfcaa4b31e4bf&quot;,&quot;r&quot;:1,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
+
+  </body></html>

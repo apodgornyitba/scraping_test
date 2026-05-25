@@ -71,7 +71,7 @@ body {
   border-radius: 16px;
   box-shadow: var(--shadow-card);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 1.75rem !important; /* Aumentado de p-5 (1.25rem) para dar más aire y evitar que esté apretado */
+  padding: 1.4rem; /* Moderado y elegante sin !important para que componentes específicos puedan definir el suyo */
 }
 
 .glass-panel:hover {
@@ -82,20 +82,20 @@ body {
 
 /* Page Layout Components */
 .dashboard-container {
-  max-width: 1450px; /* Incrementado para pantallas grandes */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2.5rem; /* Aumentado de 2rem */
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem; /* Aumentado de 2rem */
+  gap: 2rem;
 }
 
 /* Sidebar navigation toggle options */
 .sidebar-layout {
   display: grid;
-  grid-template-columns: 310px 1fr; /* Aumentado ancho de la barra lateral para CUITs */
-  gap: 2.5rem; /* Aumentado de 2rem */
-  min-height: calc(100vh - 5rem);
+  grid-template-columns: 280px 1fr; /* Restaurado a un ancho óptimo para evitar desborde */
+  gap: 2rem;
+  min-height: calc(100vh - 4rem);
 }
 
 @media (max-width: 1024px) {
@@ -119,17 +119,17 @@ body {
 .custom-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 10px; /* Aumentado para dar espacio entre filas */
+  border-spacing: 0 6px; /* Espaciado compacto y elegante entre filas */
 }
 
 .custom-table th {
-  padding: 14px 20px; /* Aumentado de 12px 16px */
+  padding: 10px 14px; /* Más compacto para evitar desbordes */
   color: var(--text-secondary);
   font-weight: 600;
   text-align: left;
-  font-size: 0.95rem; /* Aumentado de 0.875rem */
+  font-size: 0.85rem; /* Ajustado para mejor control de columnas */
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -141,15 +141,15 @@ body {
 
 .custom-table tbody tr:hover {
   background: var(--bg-card-hover);
-  transform: scale(1.005);
+  transform: scale(1.002);
 }
 
 .custom-table td {
-  padding: 18px 20px; /* Aumentado de 16px */
+  padding: 12px 14px; /* Aumentada la compacidad */
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 1.025rem; /* Aumentado de 0.95rem */
+  font-size: 0.925rem; /* Ajustado para que quepa perfectamente */
 }
 
 .custom-table td:first-child {
@@ -185,11 +185,11 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 5px 12px; /* Incrementado */
+  padding: 3px 8px; /* Ajuste compacto */
   border-radius: 9999px;
-  font-size: 0.825rem; /* Aumentado de 0.75rem */
-  font-weight: 700; /* Más negrita */
-  letter-spacing: 0.03em;
+  font-size: 0.75rem; /* Restaurado a tamaño compacto */
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .badge-success {
@@ -271,26 +271,25 @@ body {
   border-color: var(--accent-red);
 }
 
-/* Correcciones de fuentes pequeñas globales para mayor legibilidad y menos apiñamiento */
-.text-xs {
-  font-size: 0.825rem !important; /* Aumentado de 0.75rem */
+/* Ajustes específicos y seguros para legibilidad en la barra lateral e interfaz sin romper layouts */
+aside .font-mono {
+  font-size: 0.775rem !important; /* CUIT legible */
 }
-.text-\[10px\] {
-  font-size: 0.775rem !important; /* Aumentado de 10px */
+aside span.line-clamp-1 {
+  font-size: 0.925rem !important; /* Nombre legible en sidebar */
 }
-.text-\[11px\] {
-  font-size: 0.8rem !important; /* Aumentado de 11px */
+aside .badge {
+  font-size: 0.7rem !important; /* Insignias compactas */
+  padding: 2px 6px !important;
 }
-.text-sm {
-  font-size: 0.925rem !important; /* Aumentado de 0.875rem */
-}
-.btn {
-  font-size: 0.925rem !important;
+.custom-table tbody tr td:first-child a {
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 .small {
-  font-size: 0.875rem !important; /* Aumentado de 13px */
+  font-size: 0.85rem !important;
   color: var(--text-secondary) !important;
 }
 .card span {
-  line-height: 1.4;
+  line-height: 1.35;
 }

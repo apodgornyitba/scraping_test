@@ -405,7 +405,10 @@ export default function QueryAssistant() {
 
       {/* Chat Window Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-[420px] max-w-[92vw] h-[600px] max-h-[80vh] rounded-2xl glass-panel border border-[rgba(255,255,255,0.08)] shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div 
+          className="fixed bottom-24 right-6 w-[420px] max-w-[92vw] h-[600px] max-h-[80vh] rounded-2xl glass-panel border border-[rgba(255,255,255,0.08)] shadow-[0_20px_50px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-6 duration-300"
+          style={{ background: 'rgba(9, 13, 26, 0.97)', backdropFilter: 'blur(24px)' }}
+        >
           
           {/* Header */}
           <div className="bg-[rgba(15,22,42,0.6)] border-b border-[rgba(255,255,255,0.06)] px-5 py-4 flex items-center justify-between">
