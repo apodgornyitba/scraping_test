@@ -394,12 +394,12 @@ export async function POST(req: Request) {
     }
 
     // Respuesta por defecto
-    const defaultAnswer = `Bienvenido al **Asistente Tributario de Monitoreo**. Estoy capacitado para realizar búsquedas complejas y proveer detalles analíticos sobre la base de datos relacional consolidada al corte **${latestCorte}**.\n\n` +
+    const defaultAnswer = `Bienvenido al **Asistente Tributario de Monitoreo**. Estoy capacitado para realizar búsquedas complejas y proveer detalles analíticos sobre el estado consolidado de deudas al corte **${latestCorte}**.\n\n` +
       `**Consultas frecuentes que puedes realizar:**\n` +
       `- Mostrar el saldo consolidado general o total adeudado en la plataforma.\n` +
       `- Buscar contribuyentes por su nombre para ver su desglose e informacion fiscal (ejemplo: "Deuda de Leandro Dominguez" o "situacion de Camila").\n` +
       `- Listar aquellos contribuyentes que registren embargos activos de apremio en el sistema.\n` +
-      `- Identificar al maximo deudor registrado en la base de datos tributaria.\n` +
+      `- Identificar al maximo deudor registrado en los registros tributarios.\n` +
       `- Filtrar contribuyentes segun su categoria de riesgo fiscal (alto, medio o bajo).\n` +
       `- Listar contribuyentes monotributistas o responsables inscriptos.\n` +
       `- Consultar el cronograma de proximos vencimientos de obligaciones impagas.\n\n` +

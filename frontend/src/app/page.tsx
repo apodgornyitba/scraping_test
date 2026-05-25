@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { getLatestCorte, getGeneralStats, getTaxpayersSummary, getGlobalEvolution } from '@/lib/queries';
+import EvolutionChart from '@/components/EvolutionChart';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,26 +39,7 @@ export default async function Home() {
     return `${Math.round((part / total) * 100)}%`;
   };
 
-  // --- CÁLCULO DE COORDENADAS PARA GRÁFICO SVG ---
-  const chartWidth = 900;
-  const chartHeight = 250;
-  const paddingX = 50;
-  const paddingY = 30;
-
-  const maxTotal = Math.max(...evolution.map((e) => e.total), 100000);
-  const points = evolution.map((item, index) => {
-    const x = paddingX + (index / (evolution.length - 1 || 1)) * (chartWidth - paddingX * 2);
-    const y = chartHeight - paddingY - (item.total / maxTotal) * (chartHeight - paddingY * 2);
-    return { x, y, ...item };
-  });
-
-  // Generar cadena de ruta para la línea principal
-  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-
-  // Generar cadena de ruta para el área degradada
-  const areaPath = points.length > 0 
-    ? `${linePath} L ${points[points.length - 1].x} ${chartHeight - paddingY} L ${points[0].x} ${chartHeight - paddingY} Z`
-    : '';
+  // Se utiliza el componente interactivo EvolutionChart para renderizar la evolución histórica
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -65,11 +47,8 @@ export default async function Home() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-white tracking-tight m-0 uppercase flex items-center gap-2">
-            Panel de Deudas Consolidadas <span className="text-xs bg-[rgba(0,242,254,0.1)] border border-[rgba(0,242,254,0.2)] text-[var(--accent-cyan)] font-extrabold px-2.5 py-1 rounded">Consolidado</span>
+            Panel de Deudas Consolidadas 
           </h1>
-          <p className="text-sm text-[var(--text-muted)] m-0 mt-1">
-            Análisis agregado de 30 meses de historia tributaria para todas las cuentas activas en ARCA.
-          </p>
         </div>
         <div className="flex items-center gap-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] px-4 py-2 rounded-xl text-xs">
           <div>
@@ -89,7 +68,7 @@ export default async function Home() {
             {formatCurrency(stats.totalDebt)}
           </span>
           <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[rgba(255,255,255,0.04)] text-xs">
-            <span className="badge badge-danger">CON CORRIENTE</span>
+            <span className="badge badge-danger">CCMA</span>
             <span className="text-[var(--text-muted)]">Todos los contribuyentes</span>
           </div>
         </div>
@@ -150,112 +129,7 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* SVG Custom Line Chart */}
-          <div className="relative w-full h-[250px] mt-2 select-none">
-            <svg 
-              viewBox={`0 0 ${chartWidth} ${chartHeight}`} 
-              className="w-full h-full"
-              style={{ overflow: 'visible' }}
-            >
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--accent-cyan)" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="var(--accent-cyan)" stopOpacity="0.0" />
-                </linearGradient>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="6" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-
-              {/* Grid Lines Y */}
-              {[0, 0.25, 0.5, 0.75, 1].map((val, idx) => {
-                const y = paddingY + val * (chartHeight - paddingY * 2);
-                const gridValue = maxTotal * (1 - val);
-                return (
-                  <g key={idx}>
-                    <line 
-                      x1={paddingX} 
-                      y1={y} 
-                      x2={chartWidth - paddingX} 
-                      y2={y} 
-                      stroke="rgba(255, 255, 255, 0.03)" 
-                      strokeDasharray="4 4" 
-                    />
-                    <text 
-                      x={paddingX - 10} 
-                      y={y + 4} 
-                      textAnchor="end" 
-                      fill="var(--text-muted)" 
-                      fontSize="9"
-                      fontFamily="monospace"
-                    >
-                      {formatCurrency(gridValue)}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* X Axis labels */}
-              {evolution.map((item, idx) => {
-                if (idx % 4 !== 0 && idx !== evolution.length - 1) return null;
-                const x = paddingX + (idx / (evolution.length - 1 || 1)) * (chartWidth - paddingX * 2);
-                return (
-                  <text 
-                    key={idx} 
-                    x={x} 
-                    y={chartHeight - 10} 
-                    textAnchor="middle" 
-                    fill="var(--text-muted)" 
-                    fontSize="9"
-                    fontFamily="monospace"
-                  >
-                    {item.corte}
-                  </text>
-                );
-              })}
-
-              {/* Gradient Area Fill */}
-              {areaPath && <path d={areaPath} fill="url(#chartGradient)" />}
-
-              {/* Glowing Line */}
-              {linePath && (
-                <path 
-                  d={linePath} 
-                  fill="none" 
-                  stroke="var(--accent-cyan)" 
-                  strokeWidth="3.5" 
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  filter="url(#glow)"
-                />
-              )}
-
-              {/* Interactive Dots on hover & active endpoints */}
-              {points.map((p, idx) => (
-                <g key={idx} className="group/dot cursor-pointer">
-                  <circle 
-                    cx={p.x} 
-                    cy={p.y} 
-                    r="4" 
-                    fill="var(--bg-main)" 
-                    stroke="var(--accent-cyan)" 
-                    strokeWidth="2" 
-                  />
-                  <circle 
-                    cx={p.x} 
-                    cy={p.y} 
-                    r="9" 
-                    fill="var(--accent-cyan)" 
-                    opacity="0" 
-                    className="hover:opacity-20 transition-opacity" 
-                  />
-                  {/* Small Tooltip trigger box */}
-                  <title>{`${p.corte}: ${formatCurrency(p.total)}`}</title>
-                </g>
-              ))}
-            </svg>
-          </div>
+          <EvolutionChart evolution={evolution} />
         </div>
 
         {/* Global Summary & Insights */}
@@ -288,17 +162,6 @@ export default async function Home() {
               <span className="text-xs text-[var(--text-muted)] font-semibold">Promedio de Deuda</span>
               <span className="text-sm font-bold text-white font-mono">
                 {formatCurrency(stats.totalDebt / (taxpayers.filter((t) => t.total > 0).length || 1))}
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Warning Card */}
-          <div className="bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] rounded-xl p-3.5 flex items-start gap-3">
-            <span className="text-[var(--accent-red)] text-base">⚠️</span>
-            <div>
-              <span className="text-xs font-bold text-white block">Acciones de Apremio</span>
-              <span className="text-[11px] text-[var(--text-muted)] block mt-0.5 leading-normal">
-                Existen {taxpayers.reduce((acc, curr) => acc + curr.embargos_activos, 0)} embargos preventivos vigentes cargados en la base de datos relacional.
               </span>
             </div>
           </div>

@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 def verify_db():
     print("==================================================")
-    print("🔍 VERIFICACIÓN DE BASE DE DATOS TRIBUTARIA (ARCA)")
+    print("🔍 VERIFICACIÓN DE BASE DE DATOS TRIBUTARIA")
     print("==================================================")
     
     db = SessionLocal()

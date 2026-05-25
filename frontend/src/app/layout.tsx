@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ARCA Portal de Deudas - Monitoreo Tributario Premium",
-  description: "Dashboard inteligente y auditoría del estado de deudas y saldos históricos de contribuyentes en el portal de ARCA.",
+  title: "Portal de Deudas - Monitoreo Tributario Premium",
+  description: "Dashboard inteligente y auditoría del estado de deudas y saldos históricos de contribuyentes.",
 };
 
 export default function RootLayout({

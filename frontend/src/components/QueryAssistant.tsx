@@ -20,7 +20,7 @@ export default function QueryAssistant() {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: 'Bienvenido al **Asistente Tributario de Monitoreo**. Estoy capacitado para realizar búsquedas complejas y proveer detalles analíticos sobre la base de datos relacional consolidada de deudas tributarias.\n\n¿En qué puedo asistirle hoy?'
+      text: 'Bienvenido al **Asistente Tributario de Monitoreo**. Estoy capacitado para realizar búsquedas complejas y proveer detalles analíticos sobre el estado consolidado de deudas tributarias.\n\n¿En qué puedo asistirle hoy?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -109,8 +109,11 @@ export default function QueryAssistant() {
   };
 
   // Renderizador de Markdown simple para negritas y listas
-  const renderTextWithMarkdown = (text: string) => {
+  const renderTextWithMarkdown = (text: string, sender: 'user' | 'assistant') => {
     const lines = text.split('\n');
+    const isAssistant = sender === 'assistant';
+    const textColor = isAssistant ? 'text-slate-200' : 'text-white';
+    
     return lines.map((line, idx) => {
       let content: React.ReactNode = line;
 
@@ -131,7 +134,7 @@ export default function QueryAssistant() {
         if (match.index > lastIndex) {
           parts.push(processedLine.substring(lastIndex, match.index));
         }
-        parts.push(<strong key={match.index} className="text-white font-semibold">{match[1]}</strong>);
+        parts.push(<strong key={match.index} className="text-white font-bold">{match[1]}</strong>);
         lastIndex = boldRegex.lastIndex;
       }
       if (lastIndex < processedLine.length) {
@@ -151,7 +154,7 @@ export default function QueryAssistant() {
             codeSubparts.push(part.substring(cLastIndex, cMatch.index));
           }
           codeSubparts.push(
-            <code key={cMatch.index} className="bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 rounded font-mono text-[var(--accent-cyan)] text-xs">
+            <code key={cMatch.index} className="bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5 rounded font-mono text-[var(--accent-cyan)] text-xs">
               {cMatch[1]}
             </code>
           );
@@ -167,14 +170,14 @@ export default function QueryAssistant() {
 
       if (isListItem) {
         return (
-          <li key={idx} className="ml-4 list-disc mb-1 text-[var(--text-secondary)] text-[13px] leading-relaxed">
+          <li key={idx} className={`ml-4 list-disc mb-1.5 ${textColor} text-[13.5px] leading-relaxed`}>
             {content}
           </li>
         );
       }
 
       return (
-        <p key={idx} className={line.trim() === '' ? 'h-2.5' : 'mb-1.5 text-[var(--text-secondary)] text-[13px] leading-relaxed'}>
+        <p key={idx} className={line.trim() === '' ? 'h-2.5' : `mb-1.5 ${textColor} text-[13.5px] leading-relaxed`}>
           {content}
         </p>
       );
@@ -427,27 +430,27 @@ export default function QueryAssistant() {
           </div>
 
           {/* Messages Scroll Area - Highly Optimized Spacing */}
-          <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-6.5 custom-scrollbar bg-[rgba(6,9,19,0.35)]">
+          <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6.5 custom-scrollbar bg-[rgba(6,9,19,0.35)]">
             {messages.map((m) => {
               const isAssistant = m.sender === 'assistant';
               return (
                 <div
                   key={m.id}
-                  className={`flex flex-col max-w-[85%] ${
+                  className={`flex flex-col max-w-[88%] ${
                     isAssistant ? 'self-start items-start' : 'self-end items-end'
                   }`}
                 >
                   <div
-                    className={`rounded-2xl px-4 py-3 border text-left ${
+                    className={`rounded-2xl px-5 py-4 border text-left ${
                       isAssistant
                         ? 'bg-[rgba(15,22,42,0.85)] border-[rgba(255,255,255,0.04)] text-[var(--text-primary)] rounded-tl-sm shadow-md'
                         : 'bg-gradient-to-tr from-[rgba(0,242,254,0.1)] to-[rgba(157,78,221,0.1)] border-[rgba(0,242,254,0.2)] text-[var(--text-primary)] rounded-tr-sm shadow-[0_0_15px_rgba(0,242,254,0.04)]'
                     }`}
                   >
-                    {renderTextWithMarkdown(m.text)}
+                    {renderTextWithMarkdown(m.text, m.sender)}
                     {m.card && renderCard(m.card)}
                   </div>
-                  <span className="text-[8px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-1.5 px-1.5">
+                  <span className="text-[9px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-2 px-2">
                     {isAssistant ? 'TributariaAI' : 'Consulta'}
                   </span>
                 </div>
@@ -456,13 +459,13 @@ export default function QueryAssistant() {
 
             {/* Chatbot Typing Loader */}
             {isLoading && (
-              <div className="self-start flex flex-col items-start max-w-[85%]">
-                <div className="bg-[rgba(15,22,42,0.85)] border border-[rgba(255,255,255,0.04)] rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10 shadow-md">
+              <div className="self-start flex flex-col items-start max-w-[88%]">
+                <div className="bg-[rgba(15,22,42,0.85)] border border-[rgba(255,255,255,0.04)] rounded-2xl rounded-tl-sm px-5 py-4 flex items-center gap-1.5 h-10 shadow-md">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)] animate-bounce" style={{ animationDelay: '0ms' }} />
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)] animate-bounce" style={{ animationDelay: '150ms' }} />
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)] animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-[8px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-1.5 px-1.5">
+                <span className="text-[9px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-2 px-2">
                   Procesando Base de Datos...
                 </span>
               </div>
@@ -472,12 +475,15 @@ export default function QueryAssistant() {
           </div>
 
           {/* Quick Suggestions Area - Beautifully Restyled Buttons */}
-          <div className="bg-[rgba(12,18,36,0.7)] border-t border-[rgba(255,255,255,0.04)] px-4 py-3 flex gap-2 overflow-x-auto select-none custom-scrollbar">
+          <div 
+            className="bg-[rgba(12,18,36,0.7)] border-t border-[rgba(255,255,255,0.04)] px-6 py-4 flex gap-3 overflow-x-auto select-none scrollbar-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {suggestions.map((s, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSend(s.query)}
-                className="bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(0,242,254,0.05)] active:bg-[rgba(0,242,254,0.08)] border border-[rgba(255,255,255,0.05)] hover:border-[rgba(0,242,254,0.22)] rounded-lg px-3.5 py-2 text-xs text-[var(--text-secondary)] hover:text-white cursor-pointer transition-all duration-300 shrink-0 font-semibold shadow-sm transform hover:-translate-y-0.5 hover:shadow-[0_0_10px_rgba(0,242,254,0.1)]"
+                className="bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,242,254,0.06)] active:bg-[rgba(0,242,254,0.1)] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(0,242,254,0.3)] rounded-xl px-4 py-2 text-xs text-slate-200 hover:text-white cursor-pointer transition-all duration-300 shrink-0 font-bold shadow-sm transform hover:-translate-y-0.5 hover:shadow-[0_0_12px_rgba(0,242,254,0.15)]"
               >
                 {s.label}
               </button>
