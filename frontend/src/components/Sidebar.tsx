@@ -58,7 +58,7 @@ export default function Sidebar({ taxpayers, latestCorte }: SidebarProps) {
   return (
     <aside className="glass-panel flex flex-col h-[calc(100vh-2rem)] sticky top-4 p-5 overflow-hidden transition-all duration-300">
       {/* Brand Header */}
-      <div className="flex flex-col gap-1 pb-4 mb-4 border-b border-[rgba(255,255,255,0.06)]">
+      <div className="flex flex-col gap-1 pb-5 mb-6 border-b border-[rgba(255,255,255,0.06)]">
         <Link href="/" className="flex items-center gap-2 group decoration-none">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00f2fe] to-[#9d4edd] flex items-center justify-center shadow-[0_0_15px_rgba(0,242,254,0.3)] group-hover:scale-105 transition-transform">
             <span className="font-bold text-black text-sm">A</span>
@@ -73,38 +73,35 @@ export default function Sidebar({ taxpayers, latestCorte }: SidebarProps) {
       </div>
 
       {/* Search Taxpayer */}
-      <div className="mb-4 relative">
+      <div className="mb-6 relative flex items-center">
+        <svg
+          className="absolute right-4 w-4.5 h-4.5 text-[var(--text-muted)] pointer-events-none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
         <input
           type="text"
           placeholder="Buscar CUIT, Nombre o Usuario..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-[rgba(15,22,42,0.6)] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-cyan)] focus:shadow-[0_0_12px_rgba(0,242,254,0.15)] transition-all duration-300"
+          className="w-full h-14 bg-[rgba(15,22,42,0.6)] border border-[rgba(255,255,255,0.08)] rounded-xl pl-12 pr-10 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-cyan)] focus:shadow-[0_0_12px_rgba(0,242,254,0.15)] transition-all duration-300"
         />
         {searchTerm && (
           <button
             onClick={() => setSearchTerm('')}
-            className="absolute right-3 top-2.5 text-[var(--text-muted)] hover:text-white bg-transparent border-none cursor-pointer text-sm"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] hover:text-white bg-transparent border-none cursor-pointer text-sm"
           >
             ✕
           </button>
         )}
       </div>
 
-      {/* Stats Mini Banner */}
-      <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-xl p-3 mb-4 flex justify-between items-center text-xs">
-        <div>
-          <span className="text-[var(--text-muted)] block font-medium">Último Corte</span>
-          <span className="text-[var(--accent-cyan)] font-semibold uppercase">{latestCorte || 'S/D'}</span>
-        </div>
-        <div className="text-right">
-          <span className="text-[var(--text-muted)] block font-medium">Contribuyentes</span>
-          <span className="text-white font-semibold">{filteredTaxpayers.length} / {taxpayers.length}</span>
-        </div>
-      </div>
-
       {/* Taxpayers list scrollable area */}
-      <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-2.5 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto pr-1 flex flex-col custom-scrollbar">
         {filteredTaxpayers.length === 0 ? (
           <div className="text-center py-8 text-[var(--text-muted)] text-sm">
             No se encontraron contribuyentes
@@ -116,16 +113,14 @@ export default function Sidebar({ taxpayers, latestCorte }: SidebarProps) {
               <Link
                 key={t.cuit}
                 href={`/contribuyente/${t.cuit}`}
-                className={`flex flex-col gap-2 p-3.5 rounded-xl border transition-all duration-300 decoration-none relative overflow-hidden group ${
-                  isActive
+                className={`flex flex-col gap-2 p-3.5 mb-4 rounded-xl border transition-all duration-300 decoration-none relative overflow-hidden group ${isActive
                     ? 'bg-[rgba(0,242,254,0.08)] border-[var(--accent-cyan)] shadow-[0_0_15px_rgba(0,242,254,0.1)]'
                     : 'bg-[rgba(15,22,42,0.2)] border-[rgba(255,255,255,0.04)] hover:bg-[rgba(23,33,61,0.45)] hover:border-[rgba(255,255,255,0.12)]'
-                }`}
+                  }`}
               >
                 {/* Visual hover border glow accent */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${
-                  isActive ? 'bg-[var(--accent-cyan)] shadow-[0_0_8px_var(--accent-cyan)]' : 'bg-transparent group-hover:bg-[rgba(255,255,255,0.2)]'
-                }`} />
+                <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isActive ? 'bg-[var(--accent-cyan)] shadow-[0_0_8px_var(--accent-cyan)]' : 'bg-transparent group-hover:bg-[rgba(255,255,255,0.2)]'
+                  }`} />
 
                 <div className="flex justify-between items-start pl-1">
                   <div className="flex flex-col">
@@ -136,9 +131,8 @@ export default function Sidebar({ taxpayers, latestCorte }: SidebarProps) {
                       CUIT: {t.cuit}
                     </span>
                   </div>
-                  <span className={`badge text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider ${
-                    t.regimen.toLowerCase().includes('monotributo') ? 'badge-success' : 'badge-info'
-                  }`}>
+                  <span className={`badge text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider ${t.regimen.toLowerCase().includes('monotributo') ? 'badge-success' : 'badge-info'
+                    }`}>
                     {t.regimen.toLowerCase().includes('monotributo') ? 'Mono' : 'RI'}
                   </span>
                 </div>
